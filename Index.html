@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bootstrap Modal Form</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.4/dist/sweetalert2.min.css">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 5px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        
+        <button class="btn btn-success" data-toggle="modal" data-target="#formModal" >Add Student</button>
+        <h4 style="text-align: center;">Submit your Details</h4>
+        <h4 class="mt-5">Submitted Entries:</h4>
+        <table id="entriesTable" class="table table-bordered mt-2">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Age</th>
+                    <th>Gender</th>
+                    <th>Subjects</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Entries will be added here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Bootstrap Modal -->
+    <div class="modal fade" id="formModal" tabindex="-1" role="dialog" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Submit your Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="user">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" class="form-control" id="name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age</label>
+                            <input type="number" class="form-control" id="age" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Gender</label><br>
+                            <input type="radio" name="gender" id="male" value="Male" required>
+                            <label for="male">Male</label>
+                            <input type="radio" name="gender" id="female" value="Female">
+                            <label for="female">Female</label>
+                        </div>
+                        <div class="form-group">
+                            <label>Subjects</label><br>
+                            <input type="checkbox" name="subjects" value="Hindi" id="hindi">
+                            <label for="hindi">Hindi</label><br>
+                            <input type="checkbox" name="subjects" value="English" id="english">
+                            <label for="english">English</label><br>
+                            <input type="checkbox" name="subjects" value="Science" id="science">
+                            <label for="science">Science</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.4/dist/sweetalert2.all.min.js"></script>
+
+    <script>
+        document.getElementById("user").addEventListener('submit', function(event) {
+            event.preventDefault();   // Prevent form submission
+            
+            // Get form data 
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const age = document.getElementById('age').value;
+
+            // Get gender
+            const gender = document.querySelector('input[name="gender"]:checked')?.value || 'Not specified';
+
+            // Get selected subjects
+            const subjects = Array.from(document.querySelectorAll('input[name="subjects"]:checked'))
+                .map(el => el.value).join(', ') || 'None';
+
+            // Create an object to hold form data
+            const formData = {
+                name: name,
+                email: email,
+                age: age,
+                gender: gender,
+                subjects: subjects
+            };
+
+            // Retrieve data from local storage
+            let allEntries = JSON.parse(localStorage.getItem('entries')) || [];
+
+            // Add the form data to the array
+            allEntries.push(formData);
+
+            // Save the updated array back to local storage
+            localStorage.setItem('entries', JSON.stringify(allEntries));
+
+            // Display success message
+            Swal.fire({
+                title: "Saved Successfully",
+                text: "Your data has been saved!",
+                icon: "success"
+            });
+
+            // Reset the form
+            document.getElementById('user').reset();
+
+            // Hide the modal
+            $('#formModal').modal('hide');
+
+            // Display the new entry
+            displayLatestEntry(formData);
+        });
+
+        // Function to display a new entry 
+        function displayLatestEntry(entry) {
+            const tableBody = document.querySelector("#entriesTable tbody");
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+                <td>${entry.name}</td>
+                <td>${entry.email}</td>
+                <td>${entry.age}</td>
+                <td>${entry.gender}</td>
+                <td>${entry.subjects}</td>
+            `;
+            tableBody.appendChild(row);
+        }
+
+        // Display all entries on page load
+        function displayAllEntries() {
+            const allEntries = JSON.parse(localStorage.getItem('entries')) || [];
+            allEntries.forEach(function(entry) {
+                displayLatestEntry(entry);
+            });
+        }
+
+        // Call the function to display all entries on page load
+        displayLatestEntries();
+    </script>
+</body>
+</html>
